@@ -59,9 +59,9 @@ export function MetricCard({
   const card = (
     <div
       className={cn(
-        'relative flex flex-col gap-3 rounded-xl border bg-card p-5',
-        'transition-all duration-200',
-        href && 'hover:shadow-md hover:-translate-y-0.5 cursor-pointer',
+        'relative flex flex-col gap-3 rounded-xl p-5 glass-card',
+        'transition-all duration-300 ease-out',
+        href && 'hover:shadow-xl hover:-translate-y-1 hover:border-primary/30 cursor-pointer hover:bg-card/40',
         alert && 'border-red-500/30 bg-red-500/5'
       )}
     >

@@ -44,7 +44,7 @@ export function ClientForm({ defaultValues, clientId, onSubmitAction }: ClientFo
               id="full_name"
               name="full_name"
               defaultValue={defaultValues?.full_name}
-              placeholder="John Doe"
+              placeholder="Ram Sharma"
               required
             />
             {state.fieldErrors?.full_name && (
@@ -59,7 +59,7 @@ export function ClientForm({ defaultValues, clientId, onSubmitAction }: ClientFo
               name="email"
               type="email"
               defaultValue={defaultValues?.email ?? ''}
-              placeholder="client@example.com"
+              placeholder="client@himalayanlegal.com"
             />
           </div>
 
@@ -70,7 +70,7 @@ export function ClientForm({ defaultValues, clientId, onSubmitAction }: ClientFo
               name="phone"
               type="tel"
               defaultValue={defaultValues?.phone ?? ''}
-              placeholder="+1 555 000 0000"
+              placeholder="+977 9841000000"
             />
           </div>
 
@@ -80,7 +80,7 @@ export function ClientForm({ defaultValues, clientId, onSubmitAction }: ClientFo
               id="company_name"
               name="company_name"
               defaultValue={defaultValues?.company_name ?? ''}
-              placeholder="Acme Corporation"
+              placeholder="Himalayan Traders Pvt. Ltd."
             />
           </div>
 
@@ -106,7 +106,7 @@ export function ClientForm({ defaultValues, clientId, onSubmitAction }: ClientFo
               id="id_number"
               name="id_number"
               defaultValue={defaultValues?.id_number ?? ''}
-              placeholder="AB123456"
+              placeholder="27-01-79-12345"
             />
           </div>
         </div>
@@ -122,7 +122,7 @@ export function ClientForm({ defaultValues, clientId, onSubmitAction }: ClientFo
               id="address"
               name="address"
               defaultValue={defaultValues?.address ?? ''}
-              placeholder="123 Main Street, Suite 100"
+              placeholder="Maitighar, Ward No. 11"
             />
           </div>
 
@@ -132,7 +132,7 @@ export function ClientForm({ defaultValues, clientId, onSubmitAction }: ClientFo
               id="city"
               name="city"
               defaultValue={defaultValues?.city ?? ''}
-              placeholder="New York"
+              placeholder="Kathmandu"
             />
           </div>
 
@@ -142,7 +142,7 @@ export function ClientForm({ defaultValues, clientId, onSubmitAction }: ClientFo
               id="state"
               name="state"
               defaultValue={defaultValues?.state ?? ''}
-              placeholder="NY"
+              placeholder="Bagmati"
             />
           </div>
 
@@ -151,8 +151,8 @@ export function ClientForm({ defaultValues, clientId, onSubmitAction }: ClientFo
             <Input
               id="country"
               name="country"
-              defaultValue={defaultValues?.country ?? 'US'}
-              placeholder="US"
+              defaultValue={defaultValues?.country ?? 'Nepal'}
+              placeholder="Nepal"
             />
           </div>
 
@@ -162,7 +162,7 @@ export function ClientForm({ defaultValues, clientId, onSubmitAction }: ClientFo
               id="postal_code"
               name="postal_code"
               defaultValue={defaultValues?.postal_code ?? ''}
-              placeholder="10001"
+              placeholder="44600"
             />
           </div>
         </div>

@@ -99,7 +99,7 @@ export function Header({ profile, firm }: HeaderProps) {
   }
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-background/80 backdrop-blur-sm px-6 sticky top-0 z-10">
+    <header className="flex h-14 shrink-0 items-center justify-between border-b border-white/5 bg-background/40 backdrop-blur-2xl px-6 sticky top-0 z-10 shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
       {/* Breadcrumb */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-sm">
         {breadcrumbs.map((crumb, i) => (

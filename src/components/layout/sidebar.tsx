@@ -78,7 +78,7 @@ export function Sidebar({ profile, firm }: SidebarProps) {
   return (
     <aside
       className={cn(
-        'flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-300 ease-in-out relative shrink-0',
+        'flex flex-col bg-sidebar backdrop-blur-xl border-r border-sidebar-border transition-all duration-300 ease-in-out relative shrink-0',
         collapsed ? 'w-16' : 'w-64'
       )}
     >

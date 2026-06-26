@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Outfit } from 'next/font/google'
 import './globals.css'
 import { QueryProvider } from '@/components/providers/query-provider'
 import { ThemeProvider } from '@/components/providers/theme-provider'
 import { TooltipProvider } from '@/components/ui/tooltip'
 
-const inter = Inter({
+const outfit = Outfit({
   subsets: ['latin'],
   variable: '--font-sans',
   display: 'swap',
@@ -46,7 +46,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} antialiased`}>
+      <body className={`${outfit.variable} antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
