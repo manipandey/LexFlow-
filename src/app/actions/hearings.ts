@@ -47,7 +47,33 @@ export async function getHearings({ month, year }: { month?: number; year?: numb
     .gte('hearing_date', startDate)
     .lte('hearing_date', endDate)
     .order('hearing_date', { ascending: true })
-  return data ?? []
+    
+  const { data: consultations } = await supabase
+    .from('crm_consultations')
+    .select('*, crm_leads(name, legal_issue), profiles!crm_consultations_lawyer_id_fkey(full_name)')
+    .eq('firm_id', profile.firm_id!)
+    .gte('consultation_date', startDate)
+    .lte('consultation_date', endDate)
+    
+  let allEvents = data ?? []
+  
+  if (consultations) {
+    const mappedConsultations = consultations.map(c => ({
+      id: c.id,
+      title: `CRM Lead: ${c.crm_leads?.name || 'Unknown'}`,
+      hearing_type: 'consultation',
+      hearing_date: c.consultation_date,
+      start_time: c.start_time,
+      end_time: c.end_time,
+      notes: c.crm_leads?.legal_issue || '',
+      hearing_status: c.status,
+      profiles: c.profiles
+    }))
+    
+    allEvents = [...allEvents, ...mappedConsultations]
+  }
+
+  return allEvents
 }
 
 export async function createHearingAction(_prevState: ActionResult, formData: FormData): Promise<ActionResult> {

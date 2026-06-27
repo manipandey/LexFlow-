@@ -1,0 +1,1 @@
+select email, id from auth.users;

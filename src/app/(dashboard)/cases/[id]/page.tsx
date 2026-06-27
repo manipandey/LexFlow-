@@ -6,10 +6,11 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CaseTimeline } from '@/components/cases/case-timeline'
-import {
-  ArrowLeft, Pencil, Clock, Calendar, User, Gavel,
-  FileText, CheckSquare, Scale, AlertTriangle,
+import { ArrowLeft, Pencil, Clock, Calendar, User, Gavel,
+  FileText, CheckSquare, Scale, AlertTriangle, DollarSign
 } from 'lucide-react'
+import { getCaseFinancials } from '@/app/actions/expenses'
+import { ExpenseTracker } from '@/components/expenses/expense-tracker'
 import { formatDate, getStatusColor, formatStatusLabel, getPriorityColor, formatCurrency } from '@/lib/utils'
 import type { Metadata } from 'next'
 
@@ -33,6 +34,7 @@ export default async function CaseDetailPage({ params }: CaseDetailPageProps) {
   if (!caseData) notFound()
 
   const c = caseData as any
+  const financials = await getCaseFinancials(id)
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -98,6 +100,10 @@ export default async function CaseDetailPage({ params }: CaseDetailPageProps) {
           <TabsTrigger value="hearings">
             <Calendar className="mr-1.5 h-3.5 w-3.5" />
             Hearings ({c.hearings?.length ?? 0})
+          </TabsTrigger>
+          <TabsTrigger value="financials">
+            <DollarSign className="mr-1.5 h-3.5 w-3.5" />
+            Financials
           </TabsTrigger>
         </TabsList>
 
@@ -174,6 +180,10 @@ export default async function CaseDetailPage({ params }: CaseDetailPageProps) {
               ))
             )}
           </div>
+        </TabsContent>
+
+        <TabsContent value="financials" className="mt-4">
+          <ExpenseTracker caseId={id} financials={financials} />
         </TabsContent>
       </Tabs>
     </div>
