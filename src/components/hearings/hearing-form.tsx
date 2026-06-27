@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,8 +9,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Alert } from '@/components/ui/alert'
 import { Loader2, AlertCircle } from 'lucide-react'
 import type { ActionResult } from '@/types/database.types'
-import { useEffect } from 'react'
 import { NEPALI_COURTS } from '@/lib/constants'
+import { formatNepaliDate } from '@/lib/utils'
 
 interface HearingFormProps {
   action: (prevState: ActionResult, formData: FormData) => Promise<ActionResult>
@@ -25,6 +25,7 @@ const initialState: ActionResult = { success: false }
 export function HearingForm({ action, cases, clients, teamMembers, defaultValues }: HearingFormProps) {
   const [state, formAction, pending] = useActionState(action, initialState)
   const router = useRouter()
+  const [dateInput, setDateInput] = useState(defaultValues?.hearing_date ?? '')
 
   useEffect(() => {
     if (state.success) {
@@ -75,6 +76,28 @@ export function HearingForm({ action, cases, clients, teamMembers, defaultValues
               <option value="hearing">Court Hearing</option>
               <option value="meeting">Meeting</option>
               <option value="consultation">Consultation</option>
+              <option value="deadline">Deadline</option>
+              <option value="filing">Filing</option>
+              <option value="client_meeting">Client Meeting</option>
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="hearing_status">
+              Status <span className="text-destructive">*</span>
+            </Label>
+            <select
+              id="hearing_status"
+              name="hearing_status"
+              defaultValue={defaultValues?.hearing_status ?? 'scheduled'}
+              required
+              className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="scheduled">Scheduled (Peshi Tayar)</option>
+              <option value="sthagit">Postponed (Sthagit)</option>
+              <option value="herna_nabhyayeko">Not Reached (Herna Nabhyayeko)</option>
+              <option value="adesh">Order Issued (Adesh)</option>
+              <option value="faisala">Verdict (Faisala)</option>
             </select>
           </div>
 
@@ -137,12 +160,31 @@ export function HearingForm({ action, cases, clients, teamMembers, defaultValues
               id="hearing_date"
               name="hearing_date"
               type="date"
-              defaultValue={defaultValues?.hearing_date ?? ''}
+              value={dateInput}
+              onChange={(e) => setDateInput(e.target.value)}
               required
             />
+            {dateInput && (
+              <p className="text-[11px] text-primary/80 font-medium">B.S.: {formatNepaliDate(dateInput)}</p>
+            )}
             {state.fieldErrors?.hearing_date && (
               <p className="text-xs text-destructive">{state.fieldErrors.hearing_date[0]}</p>
             )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="recurrence_rule">Recurrence</Label>
+            <select
+              id="recurrence_rule"
+              name="recurrence_rule"
+              defaultValue={defaultValues?.recurrence_rule ?? ''}
+              className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">None (One-time)</option>
+              <option value="FREQ=DAILY">Daily</option>
+              <option value="FREQ=WEEKLY">Weekly</option>
+              <option value="FREQ=MONTHLY">Monthly</option>
+            </select>
           </div>
 
           <div className="space-y-2">
@@ -185,6 +227,16 @@ export function HearingForm({ action, cases, clients, teamMembers, defaultValues
                 <option key={court} value={court} />
               ))}
             </datalist>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="bench">Bench (Ijlas) / Judge</Label>
+            <Input
+              id="bench"
+              name="bench"
+              defaultValue={defaultValues?.bench ?? ''}
+              placeholder="e.g. Hon. Justice ..."
+            />
           </div>
 
           <div className="space-y-2">

@@ -2,6 +2,8 @@ import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import { format, formatDistanceToNow, isToday, isTomorrow } from 'date-fns'
 
+import NepaliDate from 'nepali-date-converter'
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
@@ -14,10 +16,25 @@ export function formatCurrency(amount: number, currency = 'NPR'): string {
   }).format(amount)
 }
 
-export function formatDate(date: string | Date | null | undefined): string {
+export function formatNepaliDate(date: string | Date | null | undefined): string {
   if (!date) return '—'
   const d = typeof date === 'string' ? new Date(date) : date
-  return format(d, 'MMM d, yyyy')
+  try {
+    const nd = new NepaliDate(d)
+    return nd.format('MMMM D, YYYY')
+  } catch (e) {
+    return format(d, 'MMM d, yyyy')
+  }
+}
+
+export function formatDate(date: string | Date | null | undefined, dual = true): string {
+  if (!date) return '—'
+  const d = typeof date === 'string' ? new Date(date) : date
+  const adDate = format(d, 'MMM d, yyyy')
+  if (dual) {
+    return `${formatNepaliDate(d)} (${adDate})`
+  }
+  return adDate
 }
 
 export function formatDateTime(date: string | Date | null | undefined): string {
@@ -32,12 +49,17 @@ export function formatRelativeTime(date: string | Date | null | undefined): stri
   return formatDistanceToNow(d, { addSuffix: true })
 }
 
-export function formatHearingDate(date: string | Date | null | undefined): string {
+export function formatHearingDate(date: string | Date | null | undefined, dual = true): string {
   if (!date) return '—'
   const d = typeof date === 'string' ? new Date(date) : date
   if (isToday(d)) return 'Today'
   if (isTomorrow(d)) return 'Tomorrow'
-  return format(d, 'EEE, MMM d')
+  
+  const adDate = format(d, 'EEE, MMM d')
+  if (dual) {
+    return `${formatNepaliDate(d)} (${adDate})`
+  }
+  return adDate
 }
 
 export function slugify(text: string): string {

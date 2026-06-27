@@ -8,7 +8,7 @@ import { format } from 'date-fns'
 
 const HearingSchema = z.object({
   title: z.string().min(2),
-  hearing_type: z.enum(['hearing', 'meeting', 'consultation']),
+  hearing_type: z.enum(['hearing', 'meeting', 'consultation', 'deadline', 'filing', 'client_meeting']),
   case_id: z.string().uuid().optional().or(z.literal('')),
   client_id: z.string().uuid().optional().or(z.literal('')),
   assigned_lawyer_id: z.string().uuid().optional().or(z.literal('')),
@@ -18,6 +18,9 @@ const HearingSchema = z.object({
   start_time: z.string().optional(),
   end_time: z.string().optional(),
   notes: z.string().optional(),
+  hearing_status: z.enum(['scheduled', 'sthagit', 'herna_nabhyayeko', 'adesh', 'faisala']).default('scheduled'),
+  bench: z.string().optional(),
+  recurrence_rule: z.string().optional(),
 })
 
 async function getHearingFirmId() {
@@ -63,6 +66,9 @@ export async function createHearingAction(_prevState: ActionResult, formData: Fo
       start_time: parsed.data.start_time || null,
       end_time: parsed.data.end_time || null,
       notes: parsed.data.notes || null,
+      hearing_status: parsed.data.hearing_status || 'scheduled',
+      bench: parsed.data.bench || null,
+      recurrence_rule: parsed.data.recurrence_rule || null,
       created_by: user.id,
     })
     if (error) return { success: false, error: error.message }
@@ -99,5 +105,16 @@ export async function deleteHearingAction(id: string): Promise<ActionResult> {
     return { success: true }
   } catch {
     return { success: false, error: 'Failed to delete' }
+  }
+}
+
+export async function updateHearingDateAction(id: string, newDate: string): Promise<ActionResult> {
+  try {
+    const { supabase, profile } = await getHearingFirmId()
+    await supabase.from('hearings').update({ hearing_date: newDate }).eq('id', id).eq('firm_id', profile.firm_id!)
+    revalidatePath('/hearings')
+    return { success: true }
+  } catch {
+    return { success: false, error: 'Failed to update date' }
   }
 }

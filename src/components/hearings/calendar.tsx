@@ -1,14 +1,15 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import {
-  format, startOfMonth, endOfMonth, eachDayOfInterval,
-  isSameMonth, isToday, isSameDay, addMonths, subMonths, getDay,
-} from 'date-fns'
+import FullCalendar from '@fullcalendar/react'
+import dayGridPlugin from '@fullcalendar/daygrid'
+import interactionPlugin from '@fullcalendar/interaction'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { ChevronLeft, ChevronRight, Calendar, Clock, MapPin } from 'lucide-react'
-import { formatDate, formatStatusLabel } from '@/lib/utils'
+import { Clock, MapPin, Gavel } from 'lucide-react'
+import { formatNepaliDate, formatStatusLabel } from '@/lib/utils'
+import { updateHearingDateAction } from '@/app/actions/hearings'
+import { toast } from 'sonner'
+import { format } from 'date-fns'
 
 interface HearingCalendarProps {
   hearings: any[]
@@ -17,97 +18,120 @@ interface HearingCalendarProps {
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  hearing: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  meeting: 'bg-teal-500/20 text-teal-400 border-teal-500/30',
-  consultation: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+  hearing: '#3b82f6', // blue-500
+  meeting: '#10b981', // emerald-500
+  consultation: '#14b8a6', // teal-500
+  deadline: '#ef4444', // red-500
+  filing: '#a855f7', // purple-500
+  client_meeting: '#f97316', // orange-500
 }
 
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const TYPE_BADGE_COLORS: Record<string, string> = {
+  hearing: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  meeting: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+  consultation: 'bg-teal-500/20 text-teal-400 border-teal-500/30',
+  deadline: 'bg-red-500/20 text-red-400 border-red-500/30',
+  filing: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+  client_meeting: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+}
+
+const STATUS_COLORS: Record<string, string> = {
+  scheduled: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20',
+  sthagit: 'bg-red-500/10 text-red-400 border-red-500/20',
+  herna_nabhyayeko: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
+  adesh: 'bg-green-500/10 text-green-400 border-green-500/20',
+  faisala: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+}
+
+const STATUS_LABELS: Record<string, string> = {
+  scheduled: 'Peshi Tayar',
+  sthagit: 'Sthagit',
+  herna_nabhyayeko: 'Herna Nabhyayeko',
+  adesh: 'Adesh',
+  faisala: 'Faisala',
+}
 
 export function HearingCalendar({ hearings, month, year }: HearingCalendarProps) {
   const router = useRouter()
-  const currentDate = new Date(year, month - 1, 1)
-  const days = eachDayOfInterval({ start: startOfMonth(currentDate), end: endOfMonth(currentDate) })
-  const firstDayOfWeek = getDay(days[0])
+  
+  const initialDate = new Date(year, month - 1, 1).toISOString().split('T')[0]
 
-  function navigate(dir: 'prev' | 'next') {
-    const next = dir === 'next' ? addMonths(currentDate, 1) : subMonths(currentDate, 1)
-    router.push(`/hearings?month=${next.getMonth() + 1}&year=${next.getFullYear()}`)
+  const events = hearings.map(h => {
+    let start = h.hearing_date
+    if (h.start_time) {
+      start += `T${h.start_time}`
+    }
+    return {
+      id: h.id,
+      title: h.title,
+      start,
+      backgroundColor: TYPE_COLORS[h.hearing_type] || '#64748b',
+      borderColor: 'transparent',
+      extendedProps: { ...h }
+    }
+  })
+
+  const handleEventDrop = async (info: any) => {
+    const id = info.event.id
+    const newDate = format(info.event.start, 'yyyy-MM-dd')
+    
+    // Optimistic UI updates are handled by FullCalendar internally
+    const result = await updateHearingDateAction(id, newDate)
+    if (!result.success) {
+      info.revert() // Revert the drag if server fails
+      toast.error('Failed to update event date')
+    } else {
+      toast.success('Event date updated successfully')
+    }
   }
 
-  function getHearingsForDay(day: Date) {
-    return hearings.filter((h) => isSameDay(new Date(h.hearing_date), day))
+  const handleDatesSet = (arg: any) => {
+    const currentMonth = arg.view.currentStart.getMonth() + 1
+    const currentYear = arg.view.currentStart.getFullYear()
+    if (currentMonth !== month || currentYear !== year) {
+      router.push(`/hearings?month=${currentMonth}&year=${currentYear}`)
+    }
   }
 
   return (
-    <div className="space-y-4">
-      {/* Calendar header */}
-      <div className="flex items-center justify-between rounded-xl border bg-card px-5 py-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate('prev')} id="prev-month-btn">
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <h2 className="text-lg font-semibold">{format(currentDate, 'MMMM yyyy')}</h2>
-        <Button variant="ghost" size="icon" onClick={() => navigate('next')} id="next-month-btn">
-          <ChevronRight className="h-4 w-4" />
-        </Button>
+    <div className="space-y-6">
+      {/* Interactive Drag & Drop Calendar */}
+      <div className="rounded-xl border bg-card p-5 calendar-container">
+        <style>{`
+          .fc-theme-standard .fc-scrollgrid { border: none; }
+          .fc-theme-standard td, .fc-theme-standard th { border-color: hsl(var(--border) / 0.4); }
+          .fc .fc-toolbar-title { font-size: 1.25rem; font-weight: 600; }
+          .fc .fc-button-primary { 
+            background-color: hsl(var(--primary)); 
+            border-color: hsl(var(--primary));
+            text-transform: capitalize;
+          }
+          .fc .fc-button-primary:hover { background-color: hsl(var(--primary) / 0.9); }
+          .fc .fc-daygrid-day.fc-day-today { background-color: hsl(var(--primary) / 0.05); }
+          .fc-event { cursor: pointer; padding: 2px 4px; font-size: 11px; border-radius: 4px; }
+        `}</style>
+        <FullCalendar
+          plugins={[dayGridPlugin, interactionPlugin]}
+          initialView="dayGridMonth"
+          initialDate={initialDate}
+          events={events}
+          editable={true} // Enables Drag & Drop
+          droppable={true}
+          eventDrop={handleEventDrop}
+          datesSet={handleDatesSet}
+          eventClick={(info) => {
+            router.push(`/hearings/${info.event.id}`)
+          }}
+          headerToolbar={{
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,dayGridWeek'
+          }}
+          height="auto"
+        />
       </div>
 
-      {/* Calendar grid */}
-      <div className="rounded-xl border bg-card overflow-hidden">
-        {/* Weekday headers */}
-        <div className="grid grid-cols-7 border-b">
-          {WEEKDAYS.map((day) => (
-            <div key={day} className="py-3 text-center text-xs font-medium text-muted-foreground">
-              {day}
-            </div>
-          ))}
-        </div>
-
-        {/* Day cells */}
-        <div className="grid grid-cols-7">
-          {/* Empty cells for offset */}
-          {Array.from({ length: firstDayOfWeek }).map((_, i) => (
-            <div key={`empty-${i}`} className="min-h-[90px] border-r border-b border-border/40 bg-muted/10 last:border-r-0" />
-          ))}
-
-          {days.map((day, i) => {
-            const dayHearings = getHearingsForDay(day)
-            const isCurrentDay = isToday(day)
-            const col = (firstDayOfWeek + i) % 7
-            const isLastCol = col === 6
-
-            return (
-              <div
-                key={day.toISOString()}
-                className={`min-h-[90px] p-2 border-b border-border/40 ${!isLastCol ? 'border-r' : ''} ${isCurrentDay ? 'bg-primary/5' : ''}`}
-              >
-                <div className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium mb-1
-                  ${isCurrentDay ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>
-                  {format(day, 'd')}
-                </div>
-                <div className="space-y-1">
-                  {dayHearings.slice(0, 2).map((h: any) => (
-                    <div
-                      key={h.id}
-                      className={`rounded px-1.5 py-0.5 text-[10px] font-medium border truncate cursor-pointer
-                        hover:opacity-80 transition-opacity ${TYPE_COLORS[h.hearing_type] ?? 'bg-muted text-muted-foreground border-border'}`}
-                      title={h.title}
-                    >
-                      {h.start_time && <span className="mr-1">{h.start_time}</span>}
-                      {h.title}
-                    </div>
-                  ))}
-                  {dayHearings.length > 2 && (
-                    <p className="text-[10px] text-muted-foreground pl-1">+{dayHearings.length - 2} more</p>
-                  )}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* Events list below */}
+      {/* Events List */}
       {hearings.length > 0 && (
         <div className="rounded-xl border bg-card p-5">
           <h3 className="text-sm font-semibold mb-3">All Events This Month</h3>
@@ -120,16 +144,25 @@ export function HearingCalendar({ hearings, month, year }: HearingCalendarProps)
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm">{h.title}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">B.S.: {formatNepaliDate(h.hearing_date)}</p>
                   <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1 text-[11px] text-muted-foreground">
                     {h.start_time && <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{h.start_time}</span>}
                     {h.court_name && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{h.court_name}</span>}
+                    {h.bench && <span className="flex items-center gap-1"><Gavel className="h-3 w-3" />{h.bench}</span>}
                     {h.profiles && <span>⚖️ {h.profiles.full_name}</span>}
                     {h.cases && <span>📁 {h.cases.case_number}</span>}
                   </div>
                 </div>
-                <Badge variant="outline" className={`shrink-0 text-[10px] ${TYPE_COLORS[h.hearing_type] ?? ''}`}>
-                  {h.hearing_type}
-                </Badge>
+                <div className="flex flex-col gap-1 items-end shrink-0">
+                  <Badge variant="outline" className={`text-[10px] ${TYPE_BADGE_COLORS[h.hearing_type] ?? ''}`}>
+                    {h.hearing_type}
+                  </Badge>
+                  {h.hearing_status && (
+                    <Badge variant="outline" className={`text-[10px] ${STATUS_COLORS[h.hearing_status] ?? ''}`}>
+                      {STATUS_LABELS[h.hearing_status] ?? h.hearing_status}
+                    </Badge>
+                  )}
+                </div>
               </div>
             ))}
           </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -9,6 +9,7 @@ import { Alert } from '@/components/ui/alert'
 import { Loader2, AlertCircle } from 'lucide-react'
 import type { ActionResult } from '@/types/database.types'
 import { NEPALI_COURTS } from '@/lib/constants'
+import { formatNepaliDate } from '@/lib/utils'
 
 interface CaseFormProps {
   action: (prevState: ActionResult, formData: FormData) => Promise<ActionResult>
@@ -35,6 +36,7 @@ const CASE_TYPES = [
 
 export function CaseForm({ action, clients, teamMembers, defaultValues, isEditing }: CaseFormProps) {
   const [state, formAction, pending] = useActionState(action, initialState)
+  const [dateInput, setDateInput] = useState(defaultValues?.filing_date ?? '')
 
   return (
     <form action={formAction} className="space-y-6">
@@ -161,8 +163,12 @@ export function CaseForm({ action, clients, teamMembers, defaultValues, isEditin
               id="filing_date"
               name="filing_date"
               type="date"
-              defaultValue={defaultValues?.filing_date ?? ''}
+              value={dateInput}
+              onChange={(e) => setDateInput(e.target.value)}
             />
+            {dateInput && (
+              <p className="text-[11px] text-primary/80 font-medium">B.S.: {formatNepaliDate(dateInput)}</p>
+            )}
           </div>
 
           <div className="space-y-2">

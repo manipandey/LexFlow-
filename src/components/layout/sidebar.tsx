@@ -22,6 +22,7 @@ import {
   ChevronRight,
   Building2,
   LogOut,
+  Gavel,
 } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -47,6 +48,7 @@ const NAV_GROUPS = [
       { href: '/cases', icon: Briefcase, label: 'Cases' },
       { href: '/documents', icon: FileText, label: 'Documents' },
       { href: '/hearings', icon: Calendar, label: 'Hearings' },
+      { href: '/cause-list', icon: Gavel, label: 'Cause List' },
     ],
   },
   {

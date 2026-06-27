@@ -1,7 +1,7 @@
 import Link from 'next/link'
-import { formatDate } from '@/lib/utils'
+import { formatDate, formatNepaliDate } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
-import { Calendar, MapPin, User, Clock } from 'lucide-react'
+import { Calendar, MapPin, User, Clock, Gavel } from 'lucide-react'
 
 interface HearingItem {
   id: string
@@ -13,6 +13,8 @@ interface HearingItem {
   cases: { title: string; case_number: string } | null
   clients: { full_name: string } | null
   profiles: { full_name: string } | null
+  hearing_status?: string
+  bench?: string | null
 }
 
 interface UpcomingHearingsProps {
@@ -25,11 +27,27 @@ const TYPE_COLORS: Record<string, string> = {
   consultation: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
 }
 
+const STATUS_COLORS: Record<string, string> = {
+  scheduled: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20',
+  sthagit: 'bg-red-500/10 text-red-400 border-red-500/20',
+  herna_nabhyayeko: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
+  adesh: 'bg-green-500/10 text-green-400 border-green-500/20',
+  faisala: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+}
+
+const STATUS_LABELS: Record<string, string> = {
+  scheduled: 'Peshi Tayar',
+  sthagit: 'Sthagit',
+  herna_nabhyayeko: 'Herna Nabhyayeko',
+  adesh: 'Adesh',
+  faisala: 'Faisala',
+}
+
 export function UpcomingHearings({ hearings }: UpcomingHearingsProps) {
   return (
     <div className="rounded-xl border bg-card p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold">Upcoming Hearings</h3>
+        <h3 className="text-sm font-semibold">Upcoming Hearings (Peshi)</h3>
         <Link href="/hearings" className="text-xs text-primary hover:underline">
           View calendar
         </Link>
@@ -37,7 +55,7 @@ export function UpcomingHearings({ hearings }: UpcomingHearingsProps) {
 
       {hearings.length === 0 ? (
         <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
-          No upcoming hearings
+          No upcoming peshi
         </div>
       ) : (
         <div className="space-y-3">
@@ -56,18 +74,28 @@ export function UpcomingHearings({ hearings }: UpcomingHearingsProps) {
                     </p>
                   )}
                 </div>
-                <Badge
-                  variant="outline"
-                  className={`text-[10px] shrink-0 ${TYPE_COLORS[hearing.hearing_type] ?? ''}`}
-                >
-                  {hearing.hearing_type}
-                </Badge>
+                <div className="flex flex-col gap-1 items-end shrink-0">
+                  <Badge
+                    variant="outline"
+                    className={`text-[10px] ${TYPE_COLORS[hearing.hearing_type] ?? ''}`}
+                  >
+                    {hearing.hearing_type}
+                  </Badge>
+                  {hearing.hearing_status && (
+                    <Badge
+                      variant="outline"
+                      className={`text-[10px] ${STATUS_COLORS[hearing.hearing_status] ?? ''}`}
+                    >
+                      {STATUS_LABELS[hearing.hearing_status] ?? hearing.hearing_status}
+                    </Badge>
+                  )}
+                </div>
               </div>
 
-              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
-                <span className="flex items-center gap-1">
+              <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-muted-foreground">
+                <span className="flex items-center gap-1 font-medium text-foreground/80">
                   <Calendar className="h-3 w-3" />
-                  {formatDate(hearing.hearing_date)}
+                  {formatNepaliDate(hearing.hearing_date)} B.S. ({formatDate(hearing.hearing_date)})
                 </span>
                 {hearing.start_time && (
                   <span className="flex items-center gap-1">
@@ -79,6 +107,12 @@ export function UpcomingHearings({ hearings }: UpcomingHearingsProps) {
                   <span className="flex items-center gap-1">
                     <MapPin className="h-3 w-3" />
                     {hearing.court_name}
+                  </span>
+                )}
+                {hearing.bench && (
+                  <span className="flex items-center gap-1">
+                    <Gavel className="h-3 w-3" />
+                    {hearing.bench}
                   </span>
                 )}
                 {hearing.profiles && (

@@ -16,7 +16,7 @@ const PUBLIC_ROUTES = [
 const PORTAL_ROUTES = ['/portal']
 
 // Routes only accessible to firm staff
-const STAFF_ROUTES = ['/dashboard', '/clients', '/cases', '/documents', '/hearings', '/tasks', '/team', '/billing', '/notifications', '/audit-logs', '/settings']
+const STAFF_ROUTES = ['/dashboard', '/clients', '/cases', '/documents', '/hearings', '/cause-list', '/tasks', '/team', '/billing', '/notifications', '/audit-logs', '/settings']
 
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })

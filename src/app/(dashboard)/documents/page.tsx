@@ -4,7 +4,7 @@ import { getDocuments } from '@/app/actions/documents'
 import { DocumentGrid } from '@/components/documents/document-grid'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Upload } from 'lucide-react'
+import { Upload, FileText } from 'lucide-react'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = { title: 'Documents' }
@@ -34,12 +34,20 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
             {documents.length} document{documents.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <Button render={<Link href="/documents/upload" id="upload-doc-btn" />}>
-          <>
-            <Upload className="mr-2 h-4 w-4" />
-            Upload Document
-          </>
-        </Button>
+        <div className="flex gap-2">
+          <Button render={<Link href="/documents/generator" id="generate-doc-btn" />} variant="outline">
+            <>
+              <FileText className="mr-2 h-4 w-4" />
+              Generator
+            </>
+          </Button>
+          <Button render={<Link href="/documents/upload" id="upload-doc-btn" />}>
+            <>
+              <Upload className="mr-2 h-4 w-4" />
+              Upload
+            </>
+          </Button>
+        </div>
       </div>
 
       {/* Category filters */}
