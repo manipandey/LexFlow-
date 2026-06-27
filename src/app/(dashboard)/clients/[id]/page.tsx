@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { formatDate, formatCurrency, getStatusColor, formatStatusLabel } from '@/lib/utils'
 import type { Metadata } from 'next'
+import { GrantPortalAccessButton } from '@/components/clients/grant-portal-access-button'
 
 interface ClientDetailPageProps {
   params: Promise<{ id: string }>
@@ -65,11 +66,18 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
             </p>
           )}
         </div>
-        <Button variant="outline" size="sm" render={<Link href={`/clients/${id}/edit`} />}>
-          <>
-            <Pencil className="mr-2 h-4 w-4" /> Edit
-          </>
-        </Button>
+        <div className="flex items-center gap-2">
+          <GrantPortalAccessButton
+            clientId={id}
+            clientName={c.full_name}
+            clientEmail={c.email}
+          />
+          <Button variant="outline" size="sm" render={<Link href={`/clients/${id}/edit`} />}>
+            <>
+              <Pencil className="mr-2 h-4 w-4" /> Edit
+            </>
+          </Button>
+        </div>
       </div>
 
       {/* Contact & Stats grid */}

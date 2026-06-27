@@ -284,3 +284,136 @@ export async function deleteClientAction(id: string): Promise<ActionResult> {
     return { success: false, error: 'An unexpected error occurred' }
   }
 }
+
+// ============================================================
+// GRANT PORTAL ACCESS — Send Magic Link (Invite by Email)
+// ============================================================
+
+export async function inviteClientToPortalAction(
+  clientId: string,
+  email: string,
+): Promise<ActionResult> {
+  try {
+    const { supabase, profile } = await getClientFirmId()
+
+    // Verify client belongs to this firm
+    const { data: client } = await supabase
+      .from('clients')
+      .select('id, full_name, email')
+      .eq('id', clientId)
+      .eq('firm_id', profile.firm_id!)
+      .single()
+
+    if (!client) return { success: false, error: 'Client not found' }
+
+    const { createAdminClient } = await import('@/lib/supabase/server')
+    const adminSupabase = await createAdminClient()
+
+    // Check if a portal user already exists with this email
+    const { data: existingList } = await adminSupabase.auth.admin.listUsers()
+    const existingUser = existingList?.users?.find((u) => u.email === email)
+
+    if (existingUser) {
+      // Already has an account — just send a magic link
+      const { error } = await adminSupabase.auth.admin.generateLink({
+        type: 'magiclink',
+        email,
+        options: { redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/portal` },
+      })
+      if (error) return { success: false, error: error.message }
+    } else {
+      // Create new auth user with role = client
+      const { data: newUser, error: createError } = await adminSupabase.auth.admin.createUser({
+        email,
+        email_confirm: false, // will be confirmed via magic link
+        user_metadata: {
+          full_name: client.full_name,
+          role: 'client',
+        },
+      })
+      if (createError) return { success: false, error: createError.message }
+
+      // Update the auto-created profile to link it to this firm
+      if (newUser?.user) {
+        await adminSupabase
+          .from('profiles')
+          .update({ firm_id: profile.firm_id!, role: 'client' })
+          .eq('id', newUser.user.id)
+      }
+
+      // Send invite / magic link
+      const { error: linkError } = await adminSupabase.auth.admin.generateLink({
+        type: 'magiclink',
+        email,
+        options: { redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/portal` },
+      })
+      if (linkError) return { success: false, error: linkError.message }
+    }
+
+    revalidatePath(`/clients/${clientId}`)
+    return { success: true, data: { message: `Invite link sent to ${email}` } }
+  } catch (e: any) {
+    return { success: false, error: e?.message ?? 'An unexpected error occurred' }
+  }
+}
+
+// ============================================================
+// GRANT PORTAL ACCESS — Set Password Manually
+// ============================================================
+
+export async function setClientPortalPasswordAction(
+  clientId: string,
+  email: string,
+  password: string,
+): Promise<ActionResult> {
+  try {
+    const { supabase, profile } = await getClientFirmId()
+
+    const { data: client } = await supabase
+      .from('clients')
+      .select('id, full_name')
+      .eq('id', clientId)
+      .eq('firm_id', profile.firm_id!)
+      .single()
+
+    if (!client) return { success: false, error: 'Client not found' }
+
+    const { createAdminClient } = await import('@/lib/supabase/server')
+    const adminSupabase = await createAdminClient()
+
+    // Check if user already exists
+    const { data: existingList } = await adminSupabase.auth.admin.listUsers()
+    const existingUser = existingList?.users?.find((u) => u.email === email)
+
+    if (existingUser) {
+      // Update the existing user's password
+      const { error } = await adminSupabase.auth.admin.updateUserById(existingUser.id, { password })
+      if (error) return { success: false, error: error.message }
+    } else {
+      // Create new auth user
+      const { data: newUser, error: createError } = await adminSupabase.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: {
+          full_name: client.full_name,
+          role: 'client',
+        },
+      })
+      if (createError) return { success: false, error: createError.message }
+
+      // Link profile to firm
+      if (newUser?.user) {
+        await adminSupabase
+          .from('profiles')
+          .update({ firm_id: profile.firm_id!, role: 'client' })
+          .eq('id', newUser.user.id)
+      }
+    }
+
+    revalidatePath(`/clients/${clientId}`)
+    return { success: true, data: { message: `Portal access granted for ${email}` } }
+  } catch (e: any) {
+    return { success: false, error: e?.message ?? 'An unexpected error occurred' }
+  }
+}
