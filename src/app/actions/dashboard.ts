@@ -3,6 +3,28 @@
 import { createClient } from '@/lib/supabase/server'
 import { startOfMonth, endOfMonth, format, subMonths } from 'date-fns'
 import type { DashboardMetrics } from '@/types/database.types'
+// Retrieves the slug of the firm for the currently authenticated user
+export async function getFirmSlug(): Promise<string | null> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('firm_id')
+    .eq('id', user.id)
+    .single()
+
+  if (!profile?.firm_id) return null
+
+  const { data: firm } = await supabase
+    .from('firms')
+    .select('slug')
+    .eq('id', profile.firm_id)
+    .single()
+
+  return firm?.slug ?? null
+}
 
 export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   const supabase = await createClient()

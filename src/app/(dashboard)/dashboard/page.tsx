@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { getFirmSlug } from '@/app/actions/dashboard'
 import { redirect } from 'next/navigation'
 import {
   getDashboardMetrics,
@@ -21,6 +22,7 @@ import {
   UserCheck,
   Archive,
   AlertTriangle,
+  Globe,
 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import type { Metadata } from 'next'
@@ -43,7 +45,9 @@ export default async function DashboardPage() {
   const firmId = profile?.firm_id
   if (!firmId) redirect('/onboarding')
 
-  // Parallel data fetching
+  const slug = await getFirmSlug();
+
+// Parallel data fetching
   const [metrics, casesByStatus, casesByType, clientGrowth, activity, hearings] =
     await Promise.all([
       getDashboardMetrics(),
@@ -62,6 +66,15 @@ export default async function DashboardPage() {
         <p className="text-muted-foreground text-sm mt-1">
           Overview of your firm&apos;s operations
         </p>
+        {slug && (
+          <a
+            href={`/firm/${slug}`}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold rounded-xl shadow-lg hover:from-emerald-500 hover:to-teal-500 transition-colors mt-4"
+          >
+            <Globe className="w-5 h-5" />
+            View My Site
+          </a>
+        )}
       </div>
 
       {/* KPI Cards */}
