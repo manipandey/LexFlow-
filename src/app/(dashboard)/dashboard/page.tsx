@@ -45,12 +45,12 @@ export default async function DashboardPage() {
   const firmId = profile?.firm_id
   if (!firmId) redirect('/onboarding')
 
-  const slug = await getFirmSlug();
+  const slug = await getFirmSlug(firmId);
 
-// Parallel data fetching
+  // Parallel data fetching
   const [metrics, casesByStatus, casesByType, clientGrowth, activity, hearings] =
     await Promise.all([
-      getDashboardMetrics(),
+      getDashboardMetrics(firmId),
       getCasesByStatus(firmId),
       getCasesByType(firmId),
       getMonthlyClientGrowth(firmId),

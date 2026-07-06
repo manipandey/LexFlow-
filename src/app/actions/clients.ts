@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getCurrentProfile } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
@@ -23,18 +23,10 @@ const ClientSchema = z.object({
 })
 
 async function getClientFirmId() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('firm_id, role')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile?.firm_id) throw new Error('No firm')
-  return { supabase, user, profile, firmId: profile.firm_id }
+  const result = await getCurrentProfile()
+  if (!result || !result.user) throw new Error('Unauthorized')
+  if (!result.firmId) throw new Error('No firm')
+  return { supabase: result.supabase, user: result.user, profile: result.profile, firmId: result.firmId }
 }
 
 // ============================================================

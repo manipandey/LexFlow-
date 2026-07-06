@@ -44,7 +44,7 @@ test('getDashboardMetrics returns correct shape', async () => {
     return chain;
   });
 
-  const metrics = await getDashboardMetrics();
+  const metrics = await getDashboardMetrics('test-firm');
   expect(metrics).toMatchObject({
     totalClients: expect.any(Number),
     activeCases: expect.any(Number),
