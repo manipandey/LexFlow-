@@ -65,6 +65,7 @@ export default async function ClientPortalLayout({
             <Link
               key={item.href}
               href={item.href}
+              prefetch={true}
               className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium bg-sidebar-accent text-sidebar-foreground shadow-sm"
             >
               <item.icon className="h-4 w-4 shrink-0 text-primary" />
