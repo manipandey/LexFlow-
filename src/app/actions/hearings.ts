@@ -1,6 +1,6 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getCurrentProfile } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type { ActionResult } from '@/types/database.types'
@@ -24,12 +24,10 @@ const HearingSchema = z.object({
 })
 
 async function getHearingFirmId() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Unauthorized')
-  const { data: profile } = await supabase.from('profiles').select('firm_id').eq('id', user.id).single()
-  if (!profile?.firm_id) throw new Error('No firm')
-  return { supabase, user, profile, firmId: profile.firm_id }
+  const result = await getCurrentProfile()
+  if (!result || !result.user) throw new Error('Unauthorized')
+  if (!result.firmId) throw new Error('No firm')
+  return { supabase: result.supabase, user: result.user, profile: result.profile, firmId: result.firmId }
 }
 
 export async function getHearings({ month, year }: { month?: number; year?: number } = {}) {
