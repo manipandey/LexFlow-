@@ -102,16 +102,69 @@ export function HearingCalendar({ hearings, month, year }: HearingCalendarProps)
       <div className="rounded-xl border bg-card p-5 calendar-container">
         <style>{`
           .fc-theme-standard .fc-scrollgrid { border: none; }
-          .fc-theme-standard td, .fc-theme-standard th { border-color: hsl(var(--border) / 0.4); }
+          .fc-theme-standard td, .fc-theme-standard th { border-color: var(--border); }
           .fc .fc-toolbar-title { display: none; }
           .fc .fc-button-primary { 
-            background-color: hsl(var(--primary)); 
-            border-color: hsl(var(--primary));
+            background-color: var(--primary) !important; 
+            border-color: var(--primary) !important;
+            color: var(--primary-foreground) !important;
             text-transform: capitalize;
           }
-          .fc .fc-button-primary:hover { background-color: hsl(var(--primary) / 0.9); }
-          .fc .fc-daygrid-day.fc-day-today { background-color: hsl(var(--primary) / 0.05); }
-          .fc-event { cursor: pointer; padding: 2px 4px; font-size: 11px; border-radius: 4px; }
+          .fc .fc-button-primary:hover { 
+            background-color: var(--primary) !important; 
+            opacity: 0.9;
+          }
+          .fc .fc-daygrid-day.fc-day-today { 
+            background-color: color-mix(in srgb, var(--primary) 8%, transparent) !important; 
+          }
+          .fc-event { 
+            cursor: pointer; 
+            padding: 4px 6px; 
+            font-size: 11px; 
+            border-radius: 6px; 
+            border: none !important;
+          }
+          .fc-event-title {
+            color: #ffffff !important;
+            font-weight: 600;
+          }
+          .fc-event-time {
+            color: rgba(255, 255, 255, 0.8) !important;
+            font-size: 9px;
+          }
+          .fc .fc-col-header-cell-cushion {
+            color: var(--foreground) !important;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none !important;
+            padding: 6px 2px;
+          }
+          .fc .fc-daygrid-day-number {
+            color: var(--foreground) !important;
+            text-decoration: none !important;
+            padding: 4px 8px;
+            font-size: 0.85rem;
+          }
+          /* Style today's header cell if highlighted */
+          .fc .fc-day-today .fc-daygrid-day-number {
+            color: var(--primary) !important;
+            font-weight: 700;
+          }
+          .fc .fc-button-primary:disabled {
+            background-color: var(--muted) !important;
+            border-color: var(--muted) !important;
+            color: var(--muted-foreground) !important;
+          }
+          .fc .fc-button-group > .fc-button {
+            border-color: var(--border) !important;
+          }
+          /* Fix hover states for fc buttons */
+          .fc .fc-button-primary:not(:disabled):active,
+          .fc .fc-button-primary:not(:disabled).fc-button-active {
+            background-color: var(--accent) !important;
+            border-color: var(--accent) !important;
+            color: var(--accent-foreground) !important;
+          }
         `}</style>
 
         {/* Custom Header Title with Nepali Month Focus */}
