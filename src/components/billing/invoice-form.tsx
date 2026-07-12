@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Alert } from '@/components/ui/alert'
 import { Loader2, AlertCircle, Plus, Trash2 } from 'lucide-react'
+import { NepaliDatePicker } from '@/components/ui/nepali-date-picker'
 
 interface LineItem {
   description: string
@@ -118,10 +119,9 @@ export function InvoiceForm({ clients, cases }: InvoiceFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="due_date">Due Date</Label>
-            <Input
+            <NepaliDatePicker
               id="due_date"
               name="due_date"
-              type="date"
             />
           </div>
 

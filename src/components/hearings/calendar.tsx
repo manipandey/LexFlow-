@@ -6,10 +6,11 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import { Badge } from '@/components/ui/badge'
 import { Clock, MapPin, Gavel } from 'lucide-react'
-import { formatNepaliDate, formatStatusLabel } from '@/lib/utils'
+import { formatNepaliDate, formatStatusLabel, getNepaliMonthRange } from '@/lib/utils'
 import { updateHearingDateAction } from '@/app/actions/hearings'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
+import NepaliDate from 'nepali-date-converter'
 
 interface HearingCalendarProps {
   hearings: any[]
@@ -55,6 +56,8 @@ export function HearingCalendar({ hearings, month, year }: HearingCalendarProps)
   const router = useRouter()
   
   const initialDate = new Date(year, month - 1, 1).toISOString().split('T')[0]
+  const nepaliMonthRange = getNepaliMonthRange(year, month)
+  const englishMonthYear = format(new Date(year, month - 1, 1), 'MMMM yyyy')
 
   const events = hearings.map(h => {
     let start = h.hearing_date
@@ -100,7 +103,7 @@ export function HearingCalendar({ hearings, month, year }: HearingCalendarProps)
         <style>{`
           .fc-theme-standard .fc-scrollgrid { border: none; }
           .fc-theme-standard td, .fc-theme-standard th { border-color: hsl(var(--border) / 0.4); }
-          .fc .fc-toolbar-title { font-size: 1.25rem; font-weight: 600; }
+          .fc .fc-toolbar-title { display: none; }
           .fc .fc-button-primary { 
             background-color: hsl(var(--primary)); 
             border-color: hsl(var(--primary));
@@ -110,6 +113,20 @@ export function HearingCalendar({ hearings, month, year }: HearingCalendarProps)
           .fc .fc-daygrid-day.fc-day-today { background-color: hsl(var(--primary) / 0.05); }
           .fc-event { cursor: pointer; padding: 2px 4px; font-size: 11px; border-radius: 4px; }
         `}</style>
+
+        {/* Custom Header Title with Nepali Month Focus */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 pb-4 border-b border-border/40">
+          <div>
+            <h2 className="text-xl font-bold tracking-tight text-foreground flex items-baseline gap-2">
+              <span className="text-2xl text-primary">{nepaliMonthRange}</span>
+              <span className="text-sm font-normal text-muted-foreground">({englishMonthYear})</span>
+            </h2>
+          </div>
+          <div className="text-xs text-muted-foreground font-medium bg-muted/50 px-2.5 py-1 rounded-md self-start sm:self-auto">
+            🇳🇵 Bikram Sambat (B.S.) Calendar Active
+          </div>
+        </div>
+
         <FullCalendar
           plugins={[dayGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
@@ -124,8 +141,27 @@ export function HearingCalendar({ hearings, month, year }: HearingCalendarProps)
           }}
           headerToolbar={{
             left: 'prev,next today',
-            center: 'title',
+            center: '', // Empty because we render our title above!
             right: 'dayGridMonth,dayGridWeek'
+          }}
+          dayCellContent={(arg) => {
+            try {
+              const nd = new NepaliDate(arg.date)
+              const nepaliDay = nd.format('D', 'np') // e.g. "२८"
+              const englishDay = arg.date.getDate() // e.g. 12
+              return (
+                <div className="flex flex-col items-center justify-center w-full h-full py-1">
+                  <span className="text-base font-bold text-foreground leading-tight select-none">{nepaliDay}</span>
+                  <span className="text-[10px] text-muted-foreground/75 leading-none select-none font-normal">{englishDay}</span>
+                </div>
+              )
+            } catch (e) {
+              return arg.dayNumberText
+            }
+          }}
+          dayHeaderContent={(arg) => {
+            const daysInNepali = ['आइत', 'सोम', 'मंगल', 'बुध', 'बिही', 'शुक्र', 'शनि']
+            return daysInNepali[arg.date.getDay()]
           }}
           height="auto"
         />

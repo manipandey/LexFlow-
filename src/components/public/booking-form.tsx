@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { submitConsultationBooking } from '@/app/actions/public'
 import { Loader2, CheckCircle, Calendar, Clock, User, Phone, Mail, FileText } from 'lucide-react'
+import { NepaliDatePicker } from '@/components/ui/nepali-date-picker'
 
 type Lawyer = { id: string; full_name: string; specialization: string }
 
@@ -121,7 +122,12 @@ export function BookingForm({ firmId, lawyers }: { firmId: string, lawyers: Lawy
               <div className="grid grid-cols-2 gap-5">
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2"><Calendar className="w-4 h-4 text-indigo-600"/> Date *</label>
-                  <input required type="date" className="w-full p-3.5 bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl transition-all outline-none" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} />
+                  <NepaliDatePicker
+                    required
+                    className="w-full p-3.5 bg-slate-50 border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl transition-all outline-none"
+                    value={formData.date}
+                    onChange={(val) => setFormData({...formData, date: val})}
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2"><Clock className="w-4 h-4 text-indigo-600"/> Time *</label>

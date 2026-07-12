@@ -8,6 +8,8 @@ import { generateLegalDocument, DocumentData } from '@/lib/document-generator'
 import { autoDraftLegalText } from '@/app/actions/drafting'
 import { saveAs } from 'file-saver'
 import { Download, FileText, Loader2, Eye, Sparkles } from 'lucide-react'
+import nepalify from 'nepalify'
+import { NepaliDatePicker } from '@/components/ui/nepali-date-picker'
 
 const TEMPLATES = [
   'Vakalatnama',
@@ -39,11 +41,38 @@ export function DocumentGenerator({ cases }: { cases: CaseData[] }) {
     opponentName: '',
     lawyerName: '',
     legalDraftText: '',
-    date: new Date().toLocaleDateString()
+    date: new Date().toISOString().split('T')[0]
   })
   const [isGenerating, setIsGenerating] = useState(false)
   const [rawContext, setRawContext] = useState('')
   const [isDrafting, setIsDrafting] = useState(false)
+  const [typeInNepali, setTypeInNepali] = useState(true)
+
+  const handleTextChange = (
+    field: keyof DocumentData | 'rawContext',
+    val: string,
+    element: HTMLInputElement | HTMLTextAreaElement
+  ) => {
+    const selectionStart = element.selectionStart
+    let finalVal = val
+    if (typeInNepali) {
+      finalVal = nepalify.format(val, 'romanized')
+    }
+    
+    if (field === 'rawContext') {
+      setRawContext(finalVal)
+    } else {
+      setFormData(prev => ({ ...prev, [field]: finalVal }))
+    }
+    
+    if (typeInNepali) {
+      requestAnimationFrame(() => {
+        const diff = finalVal.length - val.length
+        const newPos = (selectionStart || 0) + diff
+        element.setSelectionRange(newPos, newPos)
+      })
+    }
+  }
 
   const handleCaseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const caseId = e.target.value
@@ -129,8 +158,20 @@ export function DocumentGenerator({ cases }: { cases: CaseData[] }) {
         </Card>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
             <CardTitle>2. Document Details</CardTitle>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-muted-foreground">नेपाली (Romanized):</span>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={typeInNepali}
+                  onChange={(e) => setTypeInNepali(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-9 h-5 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+              </label>
+            </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleGenerate} className="space-y-4">
@@ -158,8 +199,8 @@ export function DocumentGenerator({ cases }: { cases: CaseData[] }) {
                     required
                     type="text"
                     value={formData.clientName}
-                    onChange={(e) => setFormData({...formData, clientName: e.target.value})}
-                    className="w-full p-2 border rounded-md"
+                    onChange={(e) => handleTextChange('clientName', e.target.value, e.target)}
+                    className="w-full p-2 border rounded-md bg-background"
                     placeholder="e.g. Ram Bahadur"
                   />
                 </div>
@@ -169,8 +210,8 @@ export function DocumentGenerator({ cases }: { cases: CaseData[] }) {
                     required
                     type="text"
                     value={formData.address}
-                    onChange={(e) => setFormData({...formData, address: e.target.value})}
-                    className="w-full p-2 border rounded-md"
+                    onChange={(e) => handleTextChange('address', e.target.value, e.target)}
+                    className="w-full p-2 border rounded-md bg-background"
                     placeholder="e.g. Kathmandu, Nepal"
                   />
                 </div>
@@ -179,8 +220,8 @@ export function DocumentGenerator({ cases }: { cases: CaseData[] }) {
                   <input
                     type="text"
                     value={formData.caseNo}
-                    onChange={(e) => setFormData({...formData, caseNo: e.target.value})}
-                    className="w-full p-2 border rounded-md"
+                    onChange={(e) => handleTextChange('caseNo', e.target.value, e.target)}
+                    className="w-full p-2 border rounded-md bg-background"
                     placeholder="e.g. 081-CR-0012"
                   />
                 </div>
@@ -189,21 +230,21 @@ export function DocumentGenerator({ cases }: { cases: CaseData[] }) {
                   <input
                     type="text"
                     value={formData.court}
-                    onChange={(e) => setFormData({...formData, court: e.target.value})}
-                    className="w-full p-2 border rounded-md"
+                    onChange={(e) => handleTextChange('court', e.target.value, e.target)}
+                    className="w-full p-2 border rounded-md bg-background"
                     placeholder="e.g. Supreme Court of Nepal"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Opponent Name</label>
                   <input
                     type="text"
                     value={formData.opponentName}
-                    onChange={(e) => setFormData({...formData, opponentName: e.target.value})}
-                    className="w-full p-2 border rounded-md"
+                    onChange={(e) => handleTextChange('opponentName', e.target.value, e.target)}
+                    className="w-full p-2 border rounded-md bg-background"
                     placeholder="e.g. Shyam Prasad"
                   />
                 </div>
@@ -213,9 +254,16 @@ export function DocumentGenerator({ cases }: { cases: CaseData[] }) {
                     required
                     type="text"
                     value={formData.lawyerName}
-                    onChange={(e) => setFormData({...formData, lawyerName: e.target.value})}
-                    className="w-full p-2 border rounded-md"
+                    onChange={(e) => handleTextChange('lawyerName', e.target.value, e.target)}
+                    className="w-full p-2 border rounded-md bg-background"
                     placeholder="e.g. Adv. Hari Bahadur"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Document Date</label>
+                  <NepaliDatePicker
+                    value={formData.date}
+                    onChange={(val) => setFormData({...formData, date: val})}
                   />
                 </div>
               </div>
@@ -236,8 +284,8 @@ export function DocumentGenerator({ cases }: { cases: CaseData[] }) {
                 </div>
                 <textarea
                   value={rawContext}
-                  onChange={(e) => setRawContext(e.target.value)}
-                  className="w-full p-2 border rounded-md min-h-[100px] text-sm"
+                  onChange={(e) => handleTextChange('rawContext', e.target.value, e.target)}
+                  className="w-full p-2 border rounded-md min-h-[100px] text-sm bg-background"
                   placeholder="e.g., My client lent 5 Lakhs to Shyam on Jan 5th and hasn't paid. Write a legal notice."
                 />
               </div>

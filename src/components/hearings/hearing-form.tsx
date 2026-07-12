@@ -10,7 +10,7 @@ import { Alert } from '@/components/ui/alert'
 import { Loader2, AlertCircle } from 'lucide-react'
 import type { ActionResult } from '@/types/database.types'
 import { NEPALI_COURTS } from '@/lib/constants'
-import { formatNepaliDate } from '@/lib/utils'
+import { NepaliDatePicker } from '@/components/ui/nepali-date-picker'
 
 interface HearingFormProps {
   action: (prevState: ActionResult, formData: FormData) => Promise<ActionResult>
@@ -156,17 +156,13 @@ export function HearingForm({ action, cases, clients, teamMembers, defaultValues
             <Label htmlFor="hearing_date">
               Date <span className="text-destructive">*</span>
             </Label>
-            <Input
+            <NepaliDatePicker
               id="hearing_date"
               name="hearing_date"
-              type="date"
               value={dateInput}
-              onChange={(e) => setDateInput(e.target.value)}
+              onChange={(val) => setDateInput(val)}
               required
             />
-            {dateInput && (
-              <p className="text-[11px] text-primary/80 font-medium">B.S.: {formatNepaliDate(dateInput)}</p>
-            )}
             {state.fieldErrors?.hearing_date && (
               <p className="text-xs text-destructive">{state.fieldErrors.hearing_date[0]}</p>
             )}

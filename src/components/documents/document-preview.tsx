@@ -1,5 +1,6 @@
 import React from 'react'
 import { DocumentData } from '@/lib/document-generator'
+import { formatNepaliDateInNepali } from '@/lib/utils'
 
 interface DocumentPreviewProps {
   templateType: string
@@ -7,6 +8,7 @@ interface DocumentPreviewProps {
 }
 
 export function DocumentPreview({ templateType, data }: DocumentPreviewProps) {
+  const docDate = data.date ? formatNepaliDateInNepali(data.date) : '...................'
   // Common styled wrapper for the A4 paper look
   const Paper = ({ children }: { children: React.ReactNode }) => (
     <div className="bg-white text-black shadow-xl mx-auto rounded-sm overflow-hidden" 
@@ -66,7 +68,7 @@ export function DocumentPreview({ templateType, data }: DocumentPreviewProps) {
           </div>
           <div>
             <div className="font-bold">मिति:</div>
-            <div><Highlight>{data.date || '...................'}</Highlight></div>
+            <div><Highlight>{docDate}</Highlight></div>
           </div>
         </div>
 
@@ -86,7 +88,7 @@ export function DocumentPreview({ templateType, data }: DocumentPreviewProps) {
           </div>
           <div>
             <div className="font-bold">मिति:</div>
-            <div><Highlight>{data.date || '...................'}</Highlight></div>
+            <div><Highlight>{docDate}</Highlight></div>
           </div>
         </div>
       </Paper>
@@ -97,7 +99,7 @@ export function DocumentPreview({ templateType, data }: DocumentPreviewProps) {
   return (
     <Paper>
       <div className="text-center font-bold text-lg mb-8">{templateType}</div>
-      <div className="mb-4">मिति: <Highlight>{data.date || '...................'}</Highlight></div>
+      <div className="mb-4">मिति: <Highlight>{docDate}</Highlight></div>
       <div className="mb-6"><span className="font-bold">विषय:</span> .........................................................</div>
       
       <div className="mb-2">पक्ष (Client): <Highlight>{data.clientName || '................................'}</Highlight></div>

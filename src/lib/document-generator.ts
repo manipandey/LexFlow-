@@ -1,4 +1,5 @@
 import { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel } from 'docx'
+import { formatNepaliDateInNepali } from './utils'
 
 export interface DocumentData {
   clientName: string
@@ -85,6 +86,7 @@ function P_Complex(runs: { text: string; bold?: boolean; underline?: boolean }[]
 }
 
 function generateNepaliVakalatnama(data: DocumentData): Document {
+  const docDate = data.date ? formatNepaliDateInNepali(data.date) : '....................................................'
   return new Document({
     creator: 'LexFlow System',
     title: 'Vakalatnama',
@@ -133,7 +135,7 @@ function generateNepaliVakalatnama(data: DocumentData): Document {
           ]),
           P_Complex([
             { text: 'मिति: ', bold: true },
-            { text: data.date || '....................................................' }
+            { text: docDate }
           ]),
           P(''),
           P('-----------------------------------------------------------------------------------------', { align: AlignmentType.CENTER }),
@@ -147,7 +149,7 @@ function generateNepaliVakalatnama(data: DocumentData): Document {
           ]),
           P_Complex([
             { text: 'मिति: ', bold: true },
-            { text: data.date || '....................................................' }
+            { text: docDate }
           ]),
         ],
       },
@@ -160,6 +162,7 @@ function generateNepaliLegalNotice(data: DocumentData): Document {
 }
 
 function generateGenericTemplate(title: string, data: DocumentData): Document {
+  const docDate = data.date ? formatNepaliDateInNepali(data.date) : '...................'
   return new Document({
     creator: 'LexFlow System',
     title,
@@ -181,7 +184,7 @@ function generateGenericTemplate(title: string, data: DocumentData): Document {
         children: [
           P(title, { bold: true, align: AlignmentType.CENTER }),
           P(''),
-          P(`मिति: ${data.date || '...................'}`),
+          P(`मिति: ${docDate}`),
           P(''),
           P_Complex([
             { text: 'विषय: ', bold: true },

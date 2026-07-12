@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { formatCurrency, formatDate, formatStatusLabel } from '@/lib/utils'
 import { Plus, Trash2, ArrowUpRight, ArrowDownRight, Activity, Calendar } from 'lucide-react'
 import { toast } from 'sonner'
+import { NepaliDatePicker } from '@/components/ui/nepali-date-picker'
 import {
   Dialog,
   DialogContent,
@@ -119,7 +120,7 @@ export function ExpenseTracker({ caseId, financials }: { caseId: string, financi
 
               <div className="space-y-2">
                 <Label>Date</Label>
-                <Input required type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+                <NepaliDatePicker required value={date} onChange={(val) => setDate(val)} />
               </div>
 
               <div className="space-y-2">

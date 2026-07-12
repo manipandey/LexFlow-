@@ -62,6 +62,39 @@ export function formatHearingDate(date: string | Date | null | undefined, dual =
   return adDate
 }
 
+export function formatNepaliDateInNepali(date: string | Date | null | undefined): string {
+  if (!date) return '—'
+  const d = typeof date === 'string' ? new Date(date) : date
+  try {
+    const nd = new NepaliDate(d)
+    return nd.format('YYYY MMMM DD', 'np')
+  } catch (e) {
+    return '—'
+  }
+}
+
+export function getNepaliMonthRange(year: number, month: number): string {
+  try {
+    const d1 = new NepaliDate(new Date(year, month - 1, 1))
+    const d2 = new NepaliDate(new Date(year, month, 0))
+    const m1 = d1.format('MMMM', 'np')
+    const y1 = d1.format('YYYY', 'np')
+    const m2 = d2.format('MMMM', 'np')
+    const y2 = d2.format('YYYY', 'np')
+    
+    if (m1 === m2) {
+      return `${m1} ${y1}`
+    }
+    if (y1 === y2) {
+      return `${m1} / ${m2} ${y1}`
+    }
+    return `${m1} ${y1} / ${m2} ${y2}`
+  } catch (e) {
+    return ''
+  }
+}
+
+
 export function slugify(text: string): string {
   return text
     .toLowerCase()

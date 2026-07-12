@@ -9,7 +9,7 @@ import { Alert } from '@/components/ui/alert'
 import { Loader2, AlertCircle } from 'lucide-react'
 import type { ActionResult } from '@/types/database.types'
 import { NEPALI_COURTS } from '@/lib/constants'
-import { formatNepaliDate } from '@/lib/utils'
+import { NepaliDatePicker } from '@/components/ui/nepali-date-picker'
 
 interface CaseFormProps {
   action: (prevState: ActionResult, formData: FormData) => Promise<ActionResult>
@@ -159,16 +159,12 @@ export function CaseForm({ action, clients, teamMembers, defaultValues, isEditin
 
           <div className="space-y-2">
             <Label htmlFor="filing_date">Filing Date</Label>
-            <Input
+            <NepaliDatePicker
               id="filing_date"
               name="filing_date"
-              type="date"
               value={dateInput}
-              onChange={(e) => setDateInput(e.target.value)}
+              onChange={(val) => setDateInput(val)}
             />
-            {dateInput && (
-              <p className="text-[11px] text-primary/80 font-medium">B.S.: {formatNepaliDate(dateInput)}</p>
-            )}
           </div>
 
           <div className="space-y-2">
