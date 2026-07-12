@@ -26,6 +26,7 @@ export function HearingForm({ action, cases, clients, teamMembers, defaultValues
   const [state, formAction, pending] = useActionState(action, initialState)
   const router = useRouter()
   const [dateInput, setDateInput] = useState(defaultValues?.hearing_date ?? '')
+  const isEditMode = !!defaultValues
 
   useEffect(() => {
     if (state.success) {
@@ -71,7 +72,7 @@ export function HearingForm({ action, cases, clients, teamMembers, defaultValues
               name="hearing_type"
               defaultValue={defaultValues?.hearing_type ?? 'hearing'}
               required
-              className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
             >
               <option value="hearing">Court Hearing</option>
               <option value="meeting">Meeting</option>
@@ -82,24 +83,26 @@ export function HearingForm({ action, cases, clients, teamMembers, defaultValues
             </select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="hearing_status">
-              Status <span className="text-destructive">*</span>
-            </Label>
-            <select
-              id="hearing_status"
-              name="hearing_status"
-              defaultValue={defaultValues?.hearing_status ?? 'scheduled'}
-              required
-              className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            >
-              <option value="scheduled">Scheduled (Peshi Tayar)</option>
-              <option value="sthagit">Postponed (Sthagit)</option>
-              <option value="herna_nabhyayeko">Not Reached (Herna Nabhyayeko)</option>
-              <option value="adesh">Order Issued (Adesh)</option>
-              <option value="faisala">Verdict (Faisala)</option>
-            </select>
-          </div>
+          {isEditMode && (
+            <div className="space-y-2">
+              <Label htmlFor="hearing_status">
+                Status <span className="text-destructive">*</span>
+              </Label>
+              <select
+                id="hearing_status"
+                name="hearing_status"
+                defaultValue={defaultValues?.hearing_status ?? 'scheduled'}
+                required
+                className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
+              >
+                <option value="scheduled">Scheduled (Peshi Tayar)</option>
+                <option value="sthagit">Postponed (Sthagit)</option>
+                <option value="herna_nabhyayeko">Not Reached (Herna Nabhyayeko)</option>
+                <option value="adesh">Order Issued (Adesh)</option>
+                <option value="faisala">Verdict (Faisala)</option>
+              </select>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="assigned_lawyer_id">Assigned Lawyer</Label>
@@ -235,15 +238,17 @@ export function HearingForm({ action, cases, clients, teamMembers, defaultValues
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="location">Address / Room</Label>
-            <Input
-              id="location"
-              name="location"
-              defaultValue={defaultValues?.location ?? ''}
-              placeholder="e.g. Room 4B, 200 W. Santa Ana Blvd"
-            />
-          </div>
+          {isEditMode && (
+            <div className="space-y-2">
+              <Label htmlFor="location">Address / Room</Label>
+              <Input
+                id="location"
+                name="location"
+                defaultValue={defaultValues?.location ?? ''}
+                placeholder="e.g. Room 4B, 200 W. Santa Ana Blvd"
+              />
+            </div>
+          )}
         </div>
       </div>
 

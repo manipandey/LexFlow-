@@ -142,3 +142,59 @@ export async function updateHearingDateAction(id: string, newDate: string): Prom
     return { success: false, error: 'Failed to update date' }
   }
 }
+
+export async function getHearingById(id: string) {
+  const { supabase, profile } = await getHearingFirmId()
+  const { data, error } = await supabase
+    .from('hearings')
+    .select('*, cases(title, case_number), clients(full_name)')
+    .eq('id', id)
+    .eq('firm_id', profile.firm_id!)
+    .single()
+  if (error) throw new Error(error.message)
+  return data
+}
+
+export async function updateHearingAction(id: string, _prevState: ActionResult, formData: FormData): Promise<ActionResult> {
+  try {
+    const { supabase, user, profile } = await getHearingFirmId()
+    const raw = Object.fromEntries(formData)
+    const parsed = HearingSchema.safeParse(raw)
+    if (!parsed.success) return { success: false, fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]> }
+
+    const { error } = await supabase
+      .from('hearings')
+      .update({
+        title: parsed.data.title,
+        hearing_type: parsed.data.hearing_type,
+        case_id: parsed.data.case_id || null,
+        client_id: parsed.data.client_id || null,
+        assigned_lawyer_id: parsed.data.assigned_lawyer_id || null,
+        court_name: parsed.data.court_name || null,
+        location: parsed.data.location || null,
+        hearing_date: parsed.data.hearing_date,
+        start_time: parsed.data.start_time || null,
+        end_time: parsed.data.end_time || null,
+        notes: parsed.data.notes || null,
+        hearing_status: parsed.data.hearing_status,
+        bench: parsed.data.bench || null,
+        recurrence_rule: parsed.data.recurrence_rule || null,
+      })
+      .eq('id', id)
+      .eq('firm_id', profile.firm_id!)
+    
+    if (error) return { success: false, error: error.message }
+
+    await supabase.from('activity_logs').insert({
+      firm_id: profile.firm_id!, user_id: user.id, action: 'update',
+      entity_type: 'hearing', entity_name: parsed.data.title,
+      description: `Updated hearing/event details: ${parsed.data.title}`,
+    })
+
+    revalidatePath('/hearings')
+    revalidatePath(`/hearings/${id}`)
+    return { success: true }
+  } catch {
+    return { success: false, error: 'An unexpected error occurred' }
+  }
+}
