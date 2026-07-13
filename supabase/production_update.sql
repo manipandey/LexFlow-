@@ -209,3 +209,6 @@ CREATE POLICY "hearings_select_client"
       WHERE client_id IN (SELECT id FROM clients WHERE profile_id = auth.uid())
     )
   );
+
+-- Reload PostgREST schema cache to ensure the API recognizes the new tables immediately
+NOTIFY pgrst, 'reload schema';
