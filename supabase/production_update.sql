@@ -5,6 +5,16 @@
 -- ============================================================================
 
 -- ============================================================================
+-- 0. HEARINGS COLUMNS (Migrations 005 & 006)
+-- ============================================================================
+ALTER TABLE hearings
+ADD COLUMN IF NOT EXISTS hearing_status TEXT NOT NULL DEFAULT 'scheduled',
+ADD COLUMN IF NOT EXISTS bench TEXT,
+ADD COLUMN IF NOT EXISTS recurrence_rule TEXT;
+
+CREATE INDEX IF NOT EXISTS idx_hearings_status ON hearings(hearing_status);
+
+-- ============================================================================
 -- 1. COURT CAUSE LISTS (Migration 007)
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS court_cause_lists (
