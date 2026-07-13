@@ -126,3 +126,115 @@ Court
 
 
 Automatically generate Word/PDF.
+
+7. Evidence Management
+
+Each case
+
+Photos
+
+Videos
+
+Audio
+
+PDF
+
+Court Orders
+
+Scanned Documents
+
+Emails
+
+
+Tag everything.
+
+
+8. Expense Tracking
+
+Example
+
+Travel
+
+Stamp Duty
+
+Printing
+
+Court Fee
+
+Filing Fee
+
+Photocopy
+
+Miscellaneous
+
+Profit per case.
+
+
+9. Legal CRM
+
+Potential clients.
+
+Lead
+
+↓
+
+Consultation
+
+↓
+
+Proposal
+
+↓
+
+Converted
+
+↓
+
+Case Opened
+
+
+Law firms actually need CRM.
+
+
+10. Consultation Booking
+
+Website
+
+Book Consultation
+
+Choose Lawyer
+
+Choose Time
+
+Pay Online
+
+
+Automatically creates meeting.
+
+Today's Agenda
+Today's Hearings
+
+09:30 Supreme Court
+
+11:00 Client Meeting
+
+2:00 Draft Petition
+
+4:00 Filing
+
+
+Revenue Analytics
+
+Instead of just NPR 0
+
+Monthly Revenue
+
+Outstanding Bills
+
+Paid
+
+Pending
+
+Expenses
+
+Profit

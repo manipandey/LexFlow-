@@ -1,13 +1,15 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import * as cheerio from 'cheerio'
+import NepaliDate from 'nepali-date-converter'
 
-// Function to convert English AD date to roughly the BS equivalent for testing,
-// or just hardcode today's BS date. For production, a proper AD->BS library is needed.
+// Function to convert English AD date to the BS equivalent using nepali-date-converter
 function getTodayBS() {
-  // A rough hardcoded date for testing to ensure we hit a valid day. 
-  // In a real production app, use `nepali-date-converter` or similar.
-  return { year: '2083', month: '03', day: '11' } 
+  const nd = new NepaliDate()
+  const year = nd.getYear().toString()
+  const month = (nd.getMonth() + 1).toString().padStart(2, '0')
+  const day = nd.getDate().toString().padStart(2, '0')
+  return { year, month, day } 
 }
 
 export async function GET(request: Request) {

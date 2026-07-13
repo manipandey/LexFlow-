@@ -5,6 +5,23 @@
 -- ============================================================================
 
 -- ============================================================
+-- 0. CLEANUP (Wipe public schema for a clean install)
+-- ============================================================
+
+-- Drop the public schema and all its contents
+DROP SCHEMA IF EXISTS public CASCADE;
+
+-- Recreate the public schema
+CREATE SCHEMA public;
+
+-- Restore default permissions
+GRANT USAGE ON SCHEMA public TO postgres, anon, authenticated, service_role;
+GRANT CREATE ON SCHEMA public TO postgres, anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO postgres, anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO postgres, anon, authenticated, service_role;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO postgres, anon, authenticated, service_role;
+
+-- ============================================================
 -- 1. SCHEMAS & TABLES (From Migration 001)
 -- ============================================================
 

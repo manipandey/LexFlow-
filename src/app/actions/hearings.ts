@@ -35,8 +35,15 @@ export async function getHearings({ month, year }: { month?: number; year?: numb
   const now = new Date()
   const m = month ?? now.getMonth() + 1
   const y = year ?? now.getFullYear()
-  const startDate = `${y}-${String(m).padStart(2, '0')}-01`
-  const endDate = `${y}-${String(m).padStart(2, '0')}-${new Date(y, m, 0).getDate()}`
+
+  // Add a 7-day padding around the month boundary to fetch trailing/leading days on the monthly calendar grid
+  const startObj = new Date(y, m - 1, 1)
+  startObj.setDate(startObj.getDate() - 7)
+  const endObj = new Date(y, m, 0)
+  endObj.setDate(endObj.getDate() + 7)
+
+  const startDate = format(startObj, 'yyyy-MM-dd')
+  const endDate = format(endObj, 'yyyy-MM-dd')
 
   const { data } = await supabase
     .from('hearings')
@@ -81,10 +88,24 @@ export async function createHearingAction(_prevState: ActionResult, formData: Fo
     const parsed = HearingSchema.safeParse(raw)
     if (!parsed.success) return { success: false, fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]> }
 
+    let client_id = parsed.data.client_id || null
+
+    // If client_id is not specified but case_id is, auto-derive client_id from the case
+    if (!client_id && parsed.data.case_id) {
+      const { data: caseData } = await supabase
+        .from('cases')
+        .select('client_id')
+        .eq('id', parsed.data.case_id)
+        .single()
+      if (caseData) {
+        client_id = caseData.client_id
+      }
+    }
+
     const { error } = await supabase.from('hearings').insert({
       firm_id: profile.firm_id!, ...parsed.data,
       case_id: parsed.data.case_id || null,
-      client_id: parsed.data.client_id || null,
+      client_id: client_id,
       assigned_lawyer_id: parsed.data.assigned_lawyer_id || null,
       court_name: parsed.data.court_name || null,
       start_time: parsed.data.start_time || null,
@@ -162,13 +183,27 @@ export async function updateHearingAction(id: string, _prevState: ActionResult, 
     const parsed = HearingSchema.safeParse(raw)
     if (!parsed.success) return { success: false, fieldErrors: parsed.error.flatten().fieldErrors as Record<string, string[]> }
 
+    let client_id = parsed.data.client_id || null
+
+    // If client_id is not specified but case_id is, auto-derive client_id from the case
+    if (!client_id && parsed.data.case_id) {
+      const { data: caseData } = await supabase
+        .from('cases')
+        .select('client_id')
+        .eq('id', parsed.data.case_id)
+        .single()
+      if (caseData) {
+        client_id = caseData.client_id
+      }
+    }
+
     const { error } = await supabase
       .from('hearings')
       .update({
         title: parsed.data.title,
         hearing_type: parsed.data.hearing_type,
         case_id: parsed.data.case_id || null,
-        client_id: parsed.data.client_id || null,
+        client_id: client_id,
         assigned_lawyer_id: parsed.data.assigned_lawyer_id || null,
         court_name: parsed.data.court_name || null,
         location: parsed.data.location || null,

@@ -25,6 +25,7 @@ export async function getDashboardMetrics(firmId: string): Promise<DashboardMetr
     activeCasesResult,
     closedCasesResult,
     upcomingHearingsResult,
+    upcomingConsultationsResult,
     pendingTasksResult,
     overdueTasksResult,
     teamResult,
@@ -38,6 +39,11 @@ export async function getDashboardMetrics(firmId: string): Promise<DashboardMetr
       .eq('is_completed', false)
       .gte('hearing_date', format(new Date(), 'yyyy-MM-dd'))
       .lte('hearing_date', format(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd')),
+    supabase.from('crm_consultations').select('id', { count: 'exact', head: true })
+      .eq('firm_id', firmId)
+      .eq('status', 'scheduled')
+      .gte('consultation_date', format(new Date(), 'yyyy-MM-dd'))
+      .lte('consultation_date', format(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd')),
     supabase.from('tasks').select('id', { count: 'exact', head: true })
       .eq('firm_id', firmId)
       .in('status', ['pending', 'in_progress']),
@@ -64,7 +70,7 @@ export async function getDashboardMetrics(firmId: string): Promise<DashboardMetr
     totalClients: clientsResult.count ?? 0,
     activeCases: activeCasesResult.count ?? 0,
     closedCases: closedCasesResult.count ?? 0,
-    upcomingHearings: upcomingHearingsResult.count ?? 0,
+    upcomingHearings: (upcomingHearingsResult.count ?? 0) + (upcomingConsultationsResult.count ?? 0),
     pendingTasks: pendingTasksResult.count ?? 0,
     overdueTasks: overdueTasksResult.count ?? 0,
     teamMembers: teamResult.count ?? 0,
@@ -140,13 +146,56 @@ export async function getRecentActivity(firmId: string, limit = 10) {
 
 export async function getUpcomingHearings(firmId: string, limit = 5) {
   const supabase = await createClient()
-  const { data } = await supabase
-    .from('hearings')
-    .select('*, cases(title, case_number), clients(full_name), profiles(full_name)')
-    .eq('firm_id', firmId)
-    .eq('is_completed', false)
-    .gte('hearing_date', format(new Date(), 'yyyy-MM-dd'))
-    .order('hearing_date', { ascending: true })
-    .limit(limit)
-  return data ?? []
+  const todayStr = format(new Date(), 'yyyy-MM-dd')
+
+  const [hearingsResult, consultationsResult] = await Promise.all([
+    supabase
+      .from('hearings')
+      .select('*, cases(title, case_number), clients(full_name), profiles(full_name)')
+      .eq('firm_id', firmId)
+      .eq('is_completed', false)
+      .gte('hearing_date', todayStr)
+      .order('hearing_date', { ascending: true })
+      .limit(limit),
+    supabase
+      .from('crm_consultations')
+      .select('*, crm_leads(name, legal_issue), profiles!crm_consultations_lawyer_id_fkey(full_name)')
+      .eq('firm_id', firmId)
+      .eq('status', 'scheduled')
+      .gte('consultation_date', todayStr)
+      .order('consultation_date', { ascending: true })
+      .limit(limit)
+  ])
+
+  const hearings = hearingsResult.data ?? []
+  const consultations = consultationsResult.data ?? []
+
+  const mappedConsultations = consultations.map(c => ({
+    id: c.id,
+    title: `CRM Lead: ${c.crm_leads?.name || 'Unknown'}`,
+    hearing_type: 'consultation',
+    hearing_date: c.consultation_date,
+    start_time: c.start_time,
+    end_time: c.end_time,
+    notes: c.crm_leads?.legal_issue || '',
+    hearing_status: c.status,
+    profiles: c.profiles,
+    cases: null,
+    clients: null
+  }))
+
+  const allEvents = [...hearings, ...mappedConsultations]
+
+  // Sort chronologically
+  allEvents.sort((a, b) => {
+    const dateA = a.hearing_date || ''
+    const dateB = b.hearing_date || ''
+    if (dateA !== dateB) return dateA.localeCompare(dateB)
+
+    const timeA = a.start_time || '00:00:00'
+    const timeB = b.start_time || '00:00:00'
+    return timeA.localeCompare(timeB)
+  })
+
+  return allEvents.slice(0, limit)
 }
